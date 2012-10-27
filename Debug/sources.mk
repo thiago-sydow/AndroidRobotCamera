@@ -23,7 +23,12 @@ C_UPPER_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+obj/local/armeabi-v7a/objs/opencv \
 obj/local/armeabi-v7a/objs/detection_based_tracker \
+obj/local/armeabi-v7a/objs/cxcore/cxcore/src \
+obj/local/armeabi-v7a/objs/cv/cv/src \
 obj/local/armeabi/objs/detection_based_tracker \
+jni/cxcore/src \
 jni \
+jni/cv/src \
 

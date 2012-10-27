@@ -6,13 +6,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
+import org.opencv.features2d.DescriptorExtractor;
+import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.Features2d;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.samples.fd.DetectionBasedTracker;
 
@@ -26,11 +26,17 @@ class Sample1View extends SampleViewBase {
     public static final int     VIEW_MODE_GRAY  = 1;
     public static final int     VIEW_MODE_CANNY = 2;
     public static final int     VIEW_MODE_FACE = 3;
+    public static final int     VIEW_MODE_FAST = 4;
     
-    private static final Scalar   FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
+    String FILENAME = "hello_file";
+    String string = "hello world!";
+    
+//    private static final Scalar   FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
 
     private Mat mYuv;
+    private Mat mYuv2;
     private Mat mRgba;
+    private Mat mBGR;
     private Mat mGray;
     private Mat mGraySubmat;
     private Mat mIntermediateMat;
@@ -73,9 +79,13 @@ class Sample1View extends SampleViewBase {
 	    synchronized (this) {
         	// initialize Mats before usage
         	mYuv = new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC1);
+        	mYuv2= new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC3);
+        	
         	mGraySubmat = mYuv.submat(0, getFrameHeight(), 0, getFrameWidth());
 
         	mRgba = new Mat();
+        	mBGR = new Mat();
+        	
         	mIntermediateMat = new Mat();
 
         	mBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888); 
@@ -93,6 +103,10 @@ class Sample1View extends SampleViewBase {
             // Explicitly deallocate Mats
             if (mYuv != null)
                 mYuv.release();
+            
+            if (mYuv2 != null)
+                mYuv2.release();
+            
             if (mRgba != null)
                 mRgba.release();
             if (mGraySubmat != null)
@@ -100,20 +114,30 @@ class Sample1View extends SampleViewBase {
             if (mIntermediateMat != null)
                 mIntermediateMat.release();
 
+            if(mBGR != null)
+            	mBGR.release();
+            
             mYuv = null;
+            mYuv2 = null;
+            
             mRgba = null;
             mGraySubmat = null;
             mIntermediateMat = null;
+            mBGR = null;
         }
     }
 
     @Override
     protected Bitmap processFrame(byte[] data) {
         mYuv.put(0, 0, data);
-//    	Bitmap bb = BitmapFactory.decodeByteArray(data, 0, data.length);
-//    	Utils.bitmapToMat(bb, mRgba);
+        mYuv2.put(0, 0, data);
+        
     	Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
+    	Imgproc.cvtColor(mYuv2, mBGR, Imgproc.COLOR_YUV420p2BGR, 4);
+    	
     	MatOfRect faces = new MatOfRect();
+    	MatOfKeyPoint kp = new MatOfKeyPoint(); 
+    	
         final int viewMode = mViewMode;
 
         switch (viewMode) {
@@ -122,7 +146,6 @@ class Sample1View extends SampleViewBase {
             break;
         case VIEW_MODE_RGBA:
             Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
-            Core.putText(mRgba, "OpenCV + Android", new Point(10, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 2, new Scalar(255, 0, 0, 255), 3);
             break;
         case VIEW_MODE_CANNY:
             Imgproc.Canny(mGraySubmat, mIntermediateMat, 80, 100);
@@ -132,11 +155,66 @@ class Sample1View extends SampleViewBase {
             	if (mNativeDetector != null)
             		mNativeDetector.detect(mGraySubmat, faces);
             break;
+            
+        case VIEW_MODE_FAST:
+        	
+        	if (mNativeDetector != null){
+        		
+        		FeatureDetector fd = FeatureDetector.create(FeatureDetector.FAST);
+        		Mat descriptors = new Mat();
+        		
+        		fd.detect(mGraySubmat, kp);
+        		
+        		Features2d.drawKeypoints(mGraySubmat, kp, mRgba);
+        		
+        		DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.OPPONENT_SURF);
+        		extractor.compute(mGraySubmat, kp, descriptors);
+        		
+        		if(false){
+        			
+        		}
+        		else{
+        			
+        			
+//        			
+//        			Bitmap bmp = null;
+//        			FileOutputStream fos = null;
+//        			
+//        			try {
+//        				
+//	        			fos = getContext().openFileOutput(FILENAME, Context.MODE_PRIVATE);
+//	        			bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
+//        	        
+//        	            Utils.matToBitmap(mRgba, bmp);
+//        	            bmp.compress(Bitmap.CompressFormat.PNG, 70, fos);
+//        	            fos.close();
+//        	        } catch(Exception e) {
+//        	            Log.e("org.opencv.samples.tutorial1", "Utils.matToBitmap() throws an exception: " + e.getMessage());
+//        	            if(bmp != null)
+//        	            	bmp.recycle();
+//        	            bmp = null;
+//        	            try {
+//        	            	if(fos != null)
+//        	            		fos.close();
+//						} catch (IOException e1) {
+//							Log.e("org.opencv.samples.tutorial1", "Utils.matToBitmap() throws an exception: " + e.getMessage());
+//						}
+//        	        }
+//        			
+//        		}
+        		
+//        		MatOfDMatch matches = new MatOfDMatch();
+//        		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED);
+//        		matches = matcher.match();
+        	}
+        	}
+        	break;
+        
         }
-
-        Rect[] facesArray = faces.toArray();
-        for (int i = 0; i < facesArray.length; i++)
-            Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+        
+//        Rect[] facesArray = faces.toArray();
+//        for (int i = 0; i < facesArray.length; i++)
+//        Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
 
         Bitmap bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
         
@@ -147,6 +225,7 @@ class Sample1View extends SampleViewBase {
             bmp.recycle();
             bmp = null;
         }
+        
         return bmp;
     }
 
@@ -170,10 +249,15 @@ class Sample1View extends SampleViewBase {
             if (mNativeDetector != null)
             	mNativeDetector.release();
 
+            if(mBGR != null)
+            	mBGR.release();
+            
+            
             mRgba = null;
             mGray = null;
             mCascadeFile = null;
+            mBGR = null;
         }
     }
-
+    
 }

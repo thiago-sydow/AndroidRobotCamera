@@ -9,7 +9,12 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include obj/local/armeabi/objs/detection_based_tracker/subdir.mk
+-include obj/local/armeabi-v7a/objs/opencv/subdir.mk
 -include obj/local/armeabi-v7a/objs/detection_based_tracker/subdir.mk
+-include obj/local/armeabi-v7a/objs/cxcore/cxcore/src/subdir.mk
+-include obj/local/armeabi-v7a/objs/cv/cv/src/subdir.mk
+-include jni/cxcore/src/subdir.mk
+-include jni/cv/src/subdir.mk
 -include jni/subdir.mk
 -include subdir.mk
 -include objects.mk

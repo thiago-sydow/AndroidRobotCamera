@@ -21,6 +21,7 @@ public class MainActivity extends Activity{
     private MenuItem            mItemPreviewGray;
     private MenuItem            mItemPreviewCanny;
     private MenuItem            mItemPreviewFace;
+    private MenuItem            mItemPreviewFast;
     private Sample1View         mView;
 
     private BaseLoaderCallback  mOpenCVCallBack = new BaseLoaderCallback(this) {
@@ -106,6 +107,7 @@ public class MainActivity extends Activity{
         mItemPreviewGray = menu.add("Visualização Gray-Scale");
         mItemPreviewCanny = menu.add("Detecção de Bordas");
         mItemPreviewFace = menu.add("Detecção de Faces");
+        mItemPreviewFast = menu.add("Algoritmo FAST");
         return true;
     }
 
@@ -120,6 +122,9 @@ public class MainActivity extends Activity{
         	mView.setViewMode(Sample1View.VIEW_MODE_CANNY);
         } else if (item == mItemPreviewFace) {
 			mView.setViewMode(Sample1View.VIEW_MODE_FACE);
+        }
+        else if (item == mItemPreviewFast) {
+			mView.setViewMode(Sample1View.VIEW_MODE_FAST);
         }
         return true;
     }

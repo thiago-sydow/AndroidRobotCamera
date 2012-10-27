@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../jni/DetectionBasedTracker_jni.cpp 
+../jni/DetectionBasedTracker_jni.cpp \
+../jni/cvjni.cpp 
 
 OBJS += \
-./jni/DetectionBasedTracker_jni.o 
+./jni/DetectionBasedTracker_jni.o \
+./jni/cvjni.o 
 
 CPP_DEPS += \
-./jni/DetectionBasedTracker_jni.d 
+./jni/DetectionBasedTracker_jni.d \
+./jni/cvjni.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
